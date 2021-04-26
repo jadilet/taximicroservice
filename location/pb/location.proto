@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package pb;
+
+option go_package = "./pb";
+
+message Point {
+    double latitude = 1;
+    double longitude = 2;
+}
+
+message GeoLocation {
+    string name = 1;
+    double longitude = 2;
+    double latitude = 3;
+    double dist = 4;
+    int64 geohash = 5;
+}
+
+message ResponseGeo {
+    repeated GeoLocation locations = 1; // driver ids 
+}
+
+service Location {
+    rpc Set(RequestLocation) returns (google.protobuf.Empty) {}  
+    rpc Nearest(RequestGeo) returns (ResponseGeo) {} 
+}
+
+message RequestLocation {
+    string key = 1;
+    Point p = 2;
+}
+
+message RequestGeo {
+    double lon = 1;
+    double lat = 2;
+    double radius = 3;
+}

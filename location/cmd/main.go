@@ -65,7 +65,11 @@ func main() {
 		reflection.Register(baseServer)
 		pb.RegisterLocationServer(baseServer, grpcServer)
 		level.Info(logger).Log("msg", "Server started successfully")
-		baseServer.Serve(grpcListener)
+		err = baseServer.Serve(grpcListener)
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to serve grpc server")
+			os.Exit(1)
+		}
 
 	}()
 

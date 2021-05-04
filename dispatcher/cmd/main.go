@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-kit/kit/log"
 	"github.com/jadilet/taximicroservice/dispatcher/service"
+	"github.com/jadilet/taximicroservice/location/pb"
 	"github.com/joho/godotenv"
 	"github.com/streadway/amqp"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -26,6 +29,15 @@ func main() {
 
 	if err != nil {
 		logger.Log("Error while reading the .env file")
+	}
+
+	var radius float64
+
+	radius, err = strconv.ParseFloat(os.Getenv("DISPATCHER_RADIUS"), 64)
+
+	if err != nil {
+		logger.Log("DISPATCHER_RADIUS environment variable required", err)
+		return
 	}
 
 	url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
@@ -79,7 +91,21 @@ func main() {
 		return
 	}
 
-	s := service.NewDispatcherService(logger, ch)
+	var opts []grpc.DialOption = []grpc.DialOption{grpc.WithInsecure()}
+	addr := fmt.Sprintf(":%s",
+		os.Getenv("GRPC_LOCATION_SRV_PORT"))
+
+	grpcConn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		logger.Log("Can't connect to GRPC server", err)
+		return
+	}
+
+	defer grpcConn.Close()
+
+	client := pb.NewLocationClient(grpcConn)
+
+	s := service.NewDispatcherService(logger, ch, client, radius)
 	s.Dispatch(context.Background())
 
 	errs := make(chan error)

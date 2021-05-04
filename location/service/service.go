@@ -27,14 +27,13 @@ func NewService(log log.Logger, rdb *redis.Client, key string) Service {
 func (s service) Nearest(ctx context.Context, lon, lat, radius float64) ([]redis.GeoLocation, error) {
 
 	res, err := s.rdb.GeoRadius(ctx, s.rdbKey, lon, lat, &redis.GeoRadiusQuery{
-		Unit: "km", 
-		WithDist: true, 
-		Radius: radius,
-		WithCoord:   true,
-		Sort:        "ASC",
+		Unit:      "km",
+		WithDist:  true,
+		Radius:    radius,
+		WithCoord: true,
+		Sort:      "ASC",
+	}).Result()
 
-		}).Result()
-	
 	if err != nil {
 		return []redis.GeoLocation{}, err
 	}

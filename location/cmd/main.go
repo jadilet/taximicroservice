@@ -53,7 +53,7 @@ func main() {
 	setendpoints := endpoints.MakeEndpoint(setservice)
 	grpcServer := transports.NewGRPCServer(setendpoints, logger)
 
-	grpcListener, err := net.Listen("tcp", ":50051")
+	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("GRPC_LOCATION_SRV_PORT")))
 
 	if err != nil {
 		logger.Log("during", "Listen", "err", err)

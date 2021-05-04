@@ -25,6 +25,7 @@ type Ride struct {
 	Lat         float64
 	Lon         float64
 	Addr        string
+	
 }
 
 type TripService interface {

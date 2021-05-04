@@ -82,7 +82,7 @@ func encodeNearestResponse(_ context.Context, response interface{}) (interface{}
 			Geohash:   v.GeoHash})
 	}
 
-	return &pb.ResponseGeo{Locations: res}, nil
+	return &pb.ResponseGeo{Locations: res, Err: resp.Err}, nil
 }
 
 func encodeSetResponse(_ context.Context, response interface{}) (interface{}, error) {

@@ -21,6 +21,7 @@ message GeoLocation {
 
 message ResponseGeo {
     repeated GeoLocation locations = 1; // driver ids 
+    string err = 2;
 }
 
 service Location {

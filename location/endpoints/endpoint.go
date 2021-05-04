@@ -32,6 +32,7 @@ type RequestGeo struct {
 
 type ResponseGeo struct {
 	Locations []redis.GeoLocation
+	Err       string
 }
 
 type ResponseLocation struct {
@@ -60,6 +61,10 @@ func makeNearestEndpoint(s service.Service) endpoint.Endpoint {
 
 		locations, e := s.Nearest(ctx, request.Lon, request.Lat, request.Radius)
 
-		return ResponseGeo{Locations: locations}, e
+		if e != nil {
+			return ResponseGeo{Locations: locations, Err: e.Error()}, e
+		}
+
+		return ResponseGeo{Locations: locations}, nil
 	}
 }

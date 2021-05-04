@@ -7,12 +7,13 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/transport"
-	"github.com/gorilla/mux"
-	"github.com/jadilet/taximicroservice/tripmanagement/endpoints"
-	"github.com/jadilet/taximicroservice/tripmanagement/service"
 
 	httptransport "github.com/go-kit/kit/transport/http"
+
+	"github.com/go-kit/kit/transport"
+	"github.com/gorilla/mux"
+	"github.com/jadilet/taximicroservice/drivermanagement/endpoints"
+	"github.com/jadilet/taximicroservice/drivermanagement/service"
 )
 
 type errorer interface {
@@ -23,21 +24,25 @@ var (
 	// ErrBadRouting is returned when an expected path variable is missing.
 	// It always indicates programmer error.
 	ErrBadRouting = errors.New("inconsistent mapping between route and handler")
+
+	ErrInconsistentIDs = errors.New("inconsistent IDs")
+	ErrAlreadyExists   = errors.New("already exists")
+	ErrNotFound        = errors.New("not found")
 )
 
-func MakeHTTPHandler(s service.TripService, logger log.Logger) http.Handler {
+func MakeHTTPHandler(s service.DriverService, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
-	e := endpoints.MakeEndpoint(s)
+	e := endpoints.MakeRegisterEndpoint(s)
 
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	r.Methods("POST").Path("/trip/").Handler(
+	r.Methods("POST").Path("/driver/register/").Handler(
 		httptransport.NewServer(
-			e.AddRide,
-			decodePostTripRequest,
+			e.Register,
+			decodePostDriverRequest,
 			encodeResponse,
 			options...,
 		))
@@ -54,9 +59,9 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	return json.NewEncoder(w).Encode(response)
 }
 
-func decodePostTripRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	var req endpoints.RideRequest
-	if e := json.NewDecoder(r.Body).Decode(&req.Ride); e != nil {
+func decodePostDriverRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoints.DriverRequest
+	if e := json.NewDecoder(r.Body).Decode(&req.Driver); e != nil {
 		return nil, e
 	}
 
@@ -77,9 +82,9 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 
 func codeFrom(err error) int {
 	switch err {
-	case service.ErrNotFound:
+	case ErrNotFound:
 		return http.StatusNotFound
-	case service.ErrAlreadyExists, service.ErrInconsistentIDs:
+	case ErrAlreadyExists, ErrInconsistentIDs:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

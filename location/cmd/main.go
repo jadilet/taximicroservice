@@ -56,7 +56,7 @@ func main() {
 	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("GRPC_LOCATION_SRV_PORT")))
 
 	if err != nil {
-		logger.Log("during", "Listen", "err", err)
+		logger.Log("during", "Listen Location service GRPC Server", "err", err)
 		os.Exit(1)
 	}
 
@@ -64,10 +64,10 @@ func main() {
 		baseServer := grpc.NewServer()
 		reflection.Register(baseServer)
 		pb.RegisterLocationServer(baseServer, grpcServer)
-		level.Info(logger).Log("msg", "Server started successfully")
+		level.Info(logger).Log("msg", "Location service GRPC Server started successfully")
 		err = baseServer.Serve(grpcListener)
 		if err != nil {
-			level.Error(logger).Log("msg", "Failed to serve grpc server")
+			level.Error(logger).Log("msg", "Failed to serve Location service GRPC Server")
 			os.Exit(1)
 		}
 

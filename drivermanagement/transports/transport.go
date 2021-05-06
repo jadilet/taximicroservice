@@ -8,11 +8,13 @@ import (
 
 	"github.com/go-kit/kit/log"
 
+	gt "github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 
 	"github.com/go-kit/kit/transport"
 	"github.com/gorilla/mux"
 	"github.com/jadilet/taximicroservice/drivermanagement/endpoints"
+	"github.com/jadilet/taximicroservice/drivermanagement/pb"
 	"github.com/jadilet/taximicroservice/drivermanagement/service"
 )
 
@@ -30,9 +32,50 @@ var (
 	ErrNotFound        = errors.New("not found")
 )
 
+type gRPCServer struct {
+	send gt.Handler
+	pb.UnimplementedDriverServer
+}
+
+func NewGRPCServer(endpoint endpoints.EndpointGrpc, logger log.Logger) pb.DriverServer {
+	return &gRPCServer{
+		send: gt.NewServer(
+			endpoint.Send,
+			decodeSendRequest,
+			encodeSendResponse,
+		),
+	}
+}
+
+func (s *gRPCServer) Send(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+	_, resp, err := s.send.ServeGRPC(ctx, req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.Response), nil
+}
+
+func decodeSendRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*pb.Request)
+
+	return endpoints.RideRequest{DriverID: req.Driverid, Dist: req.Dist, Lat: req.Lat, Lon: req.Lon}, nil
+}
+
+func encodeSendResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp := response.(endpoints.RideResponse)
+
+	if resp.Err != nil {
+		return &pb.Response{Msg: resp.Msg, Err: resp.Err.Error()}, nil
+	}
+
+	return &pb.Response{Msg: resp.Msg}, nil
+}
+
 func MakeHTTPHandler(s service.DriverService, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
-	e := endpoints.MakeRegisterEndpoint(s)
+	e := endpoints.MakeHttpEndpoint(s)
 
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),

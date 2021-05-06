@@ -8,8 +8,13 @@ init:
 	go get -u github.com/go-kit/kit
 	go get -u github.com/streadway/amqp
 	
-.PHONY: build
+.PHONY: proto
+proto:
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative pb/driver.proto
 
+
+
+.PHONY: build
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -a -installsuffix cgo -ldflags '-s' -o bin/drivermanagement cmd/main.go
 

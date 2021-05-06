@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+
+package pb;
+
+option go_package = "./pb";
+
+message Request {
+    string driverid = 1;
+    double dist = 2;
+    double lat = 3;
+    double lon = 4;
+}
+
+message Response {
+    string msg = 1;
+    string err = 2;
+}
+
+service Driver {
+    rpc Send(Request) returns (Response) {}
+}

@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LocationClient interface {
 	Set(ctx context.Context, in *RequestLocation, opts ...grpc.CallOption) (*empty.Empty, error)
-	Nearest(ctx context.Context, in *RequestGeo, opts ...grpc.CallOption) (*ResponseGeo, error)
+	Nearest(ctx context.Context, in *GeoRequest, opts ...grpc.CallOption) (*GeoResponse, error)
 }
 
 type locationClient struct {
@@ -40,8 +40,8 @@ func (c *locationClient) Set(ctx context.Context, in *RequestLocation, opts ...g
 	return out, nil
 }
 
-func (c *locationClient) Nearest(ctx context.Context, in *RequestGeo, opts ...grpc.CallOption) (*ResponseGeo, error) {
-	out := new(ResponseGeo)
+func (c *locationClient) Nearest(ctx context.Context, in *GeoRequest, opts ...grpc.CallOption) (*GeoResponse, error) {
+	out := new(GeoResponse)
 	err := c.cc.Invoke(ctx, "/pb.Location/Nearest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (c *locationClient) Nearest(ctx context.Context, in *RequestGeo, opts ...gr
 // for forward compatibility
 type LocationServer interface {
 	Set(context.Context, *RequestLocation) (*empty.Empty, error)
-	Nearest(context.Context, *RequestGeo) (*ResponseGeo, error)
+	Nearest(context.Context, *GeoRequest) (*GeoResponse, error)
 	mustEmbedUnimplementedLocationServer()
 }
 
@@ -65,7 +65,7 @@ type UnimplementedLocationServer struct {
 func (UnimplementedLocationServer) Set(context.Context, *RequestLocation) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (UnimplementedLocationServer) Nearest(context.Context, *RequestGeo) (*ResponseGeo, error) {
+func (UnimplementedLocationServer) Nearest(context.Context, *GeoRequest) (*GeoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nearest not implemented")
 }
 func (UnimplementedLocationServer) mustEmbedUnimplementedLocationServer() {}
@@ -100,7 +100,7 @@ func _Location_Set_Handler(srv interface{}, ctx context.Context, dec func(interf
 }
 
 func _Location_Nearest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestGeo)
+	in := new(GeoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func _Location_Nearest_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/pb.Location/Nearest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LocationServer).Nearest(ctx, req.(*RequestGeo))
+		return srv.(LocationServer).Nearest(ctx, req.(*GeoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

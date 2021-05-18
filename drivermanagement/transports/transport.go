@@ -60,11 +60,14 @@ func (s *gRPCServer) Send(ctx context.Context, req *pb.Request) (*pb.Response, e
 func decodeSendRequest(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*pb.Request)
 
-	return endpoints.RideRequest{DriverID: req.Driverid, Dist: req.Dist, Lat: req.Lat, Lon: req.Lon}, nil
+	return endpoints.RideReq{DriverID: uint(req.Driverid),
+		Dist: req.Dist,
+		Lat:  req.Lat,
+		Lon:  req.Lon}, nil
 }
 
 func encodeSendResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(endpoints.RideResponse)
+	resp := response.(endpoints.RideResp)
 
 	if resp.Err != nil {
 		return &pb.Response{Msg: resp.Msg, Err: resp.Err.Error()}, nil
@@ -85,7 +88,15 @@ func MakeHTTPHandler(s service.DriverService, logger log.Logger) http.Handler {
 	r.Methods("POST").Path("/driver/register/").Handler(
 		httptransport.NewServer(
 			e.Register,
-			decodePostDriverRequest,
+			decodePostDriverRegisterReq,
+			encodeResponse,
+			options...,
+		))
+
+	r.Methods("POST").Path("/driver/accept/").Handler(
+		httptransport.NewServer(
+			e.Accept,
+			decodePostDriverAcceptReq,
 			encodeResponse,
 			options...,
 		))
@@ -102,10 +113,19 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	return json.NewEncoder(w).Encode(response)
 }
 
-func decodePostDriverRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	var req endpoints.DriverRequest
-	if e := json.NewDecoder(r.Body).Decode(&req.Driver); e != nil {
-		return nil, e
+func decodePostDriverRegisterReq(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoints.DriverRegisterReq
+	if err := json.NewDecoder(r.Body).Decode(&req.Driver); err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+func decodePostDriverAcceptReq(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoints.DriverAcceptReq
+	if err := json.NewDecoder(r.Body).Decode(&req.Task); err != nil {
+		return nil, err
 	}
 
 	return req, nil

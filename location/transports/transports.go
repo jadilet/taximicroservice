@@ -3,6 +3,9 @@ package transports
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
+	"strconv"
 
 	"github.com/go-kit/kit/log"
 	gt "github.com/go-kit/kit/transport/grpc"
@@ -32,14 +35,14 @@ func NewGRPCServer(endpoint endpoints.Endpoint, logger log.Logger) pb.LocationSe
 	}
 }
 
-func (s *gRPCServer) Nearest(ctx context.Context, req *pb.RequestGeo) (*pb.ResponseGeo, error) {
+func (s *gRPCServer) Nearest(ctx context.Context, req *pb.GeoRequest) (*pb.GeoResponse, error) {
 	_, resp, err := s.nearest.ServeGRPC(ctx, req)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*pb.ResponseGeo), nil
+	return resp.(*pb.GeoResponse), nil
 }
 
 func (s *gRPCServer) Set(ctx context.Context, req *pb.RequestLocation) (*empty.Empty, error) {
@@ -60,21 +63,29 @@ func decodeSetRequest(_ context.Context, request interface{}) (interface{}, erro
 	}
 
 	p := endpoints.Point{Lat: req.P.Latitude, Lon: req.P.Longitude}
-	return endpoints.RequestLocation{Key: req.Key, P: p}, nil
+	return endpoints.RequestLocation{Key: fmt.Sprintf("driver_%d", req.Key), P: p}, nil
 }
 
 func decodeNearestRequest(_ context.Context, request interface{}) (interface{}, error) {
-	req := request.(*pb.RequestGeo)
+	req := request.(*pb.GeoRequest)
 
-	return endpoints.RequestGeo{Lat: req.Lat, Lon: req.Lon, Radius: req.Radius}, nil
+	return endpoints.GeoRequest{Lat: req.Lat, Lon: req.Lon, Radius: req.Radius}, nil
 }
 
 func encodeNearestResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(endpoints.ResponseGeo)
+	resp := response.(endpoints.GeoResponse)
+	reg := regexp.MustCompile("[0-9]+")
 
 	res := []*pb.GeoLocation{}
 	for _, v := range resp.Locations {
+		id, err := strconv.Atoi(reg.FindString(v.Name))
+
+		if err != nil {
+			continue
+		}
+
 		res = append(res, &pb.GeoLocation{
+			Id:        int32(id),
 			Name:      v.Name,
 			Longitude: v.Longitude,
 			Latitude:  v.Latitude,
@@ -82,7 +93,7 @@ func encodeNearestResponse(_ context.Context, response interface{}) (interface{}
 			Geohash:   v.GeoHash})
 	}
 
-	return &pb.ResponseGeo{Locations: res, Err: resp.Err}, nil
+	return &pb.GeoResponse{Locations: res, Err: resp.Err}, nil
 }
 
 func encodeSetResponse(_ context.Context, response interface{}) (interface{}, error) {

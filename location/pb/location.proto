@@ -17,24 +17,25 @@ message GeoLocation {
     double latitude = 3;
     double dist = 4;
     int64 geohash = 5;
+    int32 id = 6;
 }
 
-message ResponseGeo {
+message GeoResponse {
     repeated GeoLocation locations = 1; // driver ids 
     string err = 2;
 }
 
 service Location {
     rpc Set(RequestLocation) returns (google.protobuf.Empty) {}  
-    rpc Nearest(RequestGeo) returns (ResponseGeo) {} 
+    rpc Nearest(GeoRequest) returns (GeoResponse) {} 
 }
 
 message RequestLocation {
-    string key = 1;
+    int32 key = 1;
     Point p = 2;
 }
 
-message RequestGeo {
+message GeoRequest {
     double lon = 1;
     double lat = 2;
     double radius = 3;

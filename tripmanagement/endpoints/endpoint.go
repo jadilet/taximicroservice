@@ -11,20 +11,20 @@ type Endpoint struct {
 	AddRide endpoint.Endpoint
 }
 
-type RideRequest struct {
+type RideReq struct {
 	Ride service.Ride
 }
 
-type RideResponse struct {
+type RideResp struct {
 	Msg string `json:"msg"`
 	Err error  `json:"error,omitempty"`
 }
 
 func makeAddRideEndpoint(s service.TripService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		req := request.(RideRequest)
+		req := request.(RideReq)
 		msg, err := s.AddRide(ctx, req.Ride)
-		return RideResponse{Msg: msg, Err: err}, err
+		return RideResp{Msg: msg, Err: err}, err
 	}
 }
 func MakeEndpoint(s service.TripService) Endpoint {

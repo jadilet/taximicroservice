@@ -25,7 +25,6 @@ type Ride struct {
 	Lat         float64
 	Lon         float64
 	Addr        string
-	
 }
 
 type TripService interface {
@@ -34,16 +33,17 @@ type TripService interface {
 
 type tripService struct {
 	logger log.Logger
-	db     *gorm.DB
-	ch     *amqp.Channel
+	masterDB *gorm.DB
+	slaveDB  *gorm.DB
+	ch *amqp.Channel
 }
 
-func NewTripService(log log.Logger, db *gorm.DB, ch *amqp.Channel) TripService {
-	return &tripService{logger: log, db: db, ch: ch}
+func NewTripService(log log.Logger, master *gorm.DB,slave *gorm.DB, ch *amqp.Channel) TripService {
+	return &tripService{logger: log, masterDB: master, slaveDB: slave, ch: ch}
 }
 
 func (srv *tripService) AddRide(ctx context.Context, ride Ride) (string, error) {
-	res := srv.db.Create(&ride)
+	res := srv.masterDB.Create(&ride)
 
 	if res.Error != nil {
 		return "", res.Error

@@ -76,16 +76,16 @@ func main() {
 	// waits for the driver's response
 	// if driver doesn't accept the ride then the ride would be re-queued to the dispatcher service
 	_, err = ch.QueueDeclare(
-		"waiting_driver_response_queue", // name
-		true,                            // durable
-		false,                           // delete when unused
-		false,                           // exclusive
-		false,                           // no-wait
-		nil,                             // arguments
+		"waiting_driver_response", // name
+		true,                      // durable
+		false,                     // delete when unused
+		false,                     // exclusive
+		false,                     // no-wait
+		nil,                       // arguments
 	)
 
 	if err != nil {
-		logger.Log("Failed to declare a queue", err)
+		logger.Log("Failed to declare a queue waiting_driver_response", err)
 		return
 	}
 
@@ -100,48 +100,51 @@ func main() {
 		return
 	}
 
-	dns := fmt.Sprintf(
+	dnsMaster := fmt.Sprintf(
 		"%s:%s@%s(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		os.Getenv("MYSQL_USER"),
 		os.Getenv("MYSQL_PASSWORD"),
 		os.Getenv("MYSQL_PROTOCOL"),
-		os.Getenv("MYSQL_HOST"),
-		os.Getenv("MYSQL_PORT"),
+		os.Getenv("MYSQL_MASTER_HOST"),
+		os.Getenv("MYSQL_MASTER_PORT"),
 		os.Getenv("MYSQL_DBNAME"),
 	)
 
-	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{})
+	masterDb, err := dbConnection(dnsMaster, 15, 100, true)
 
 	if err != nil {
-		logger.Log(err)
+		logger.Log("Master database ", err)
 		return
 	}
 
-	err = db.AutoMigrate(&service.Driver{})
+	dnsSlave := fmt.Sprintf(
+		"%s:%s@%s(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("MYSQL_USER"),
+		os.Getenv("MYSQL_PASSWORD"),
+		os.Getenv("MYSQL_PROTOCOL"),
+		os.Getenv("MYSQL_SLAVE_HOST"),
+		os.Getenv("MYSQL_SLAVE_PORT"),
+		os.Getenv("MYSQL_DBNAME"),
+	)
+
+	slaveDb, err := dbConnection(dnsSlave, 15, 100, false)
 
 	if err != nil {
-		logger.Log(err)
-	}
-
-	sqlDB, err := db.DB()
-
-	if err != nil {
-		logger.Log(err)
+		logger.Log("Slave database ", err)
 		return
 	}
 
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	sqlDB.SetMaxIdleConns(15)
-
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	sqlDB.SetMaxOpenConns(100)
-
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	s := service.NewDriverService(logger, db, ch)
+	s := service.NewDriverService(logger, masterDb, slaveDb, ch)
 	h := transports.MakeHTTPHandler(s, log.With(logger, "component", "HTTP"))
-	s.CheckResponse(context.Background())
+
+	go func(s service.DriverService) {
+		err = s.CheckResponse(context.Background())
+
+		if err != nil {
+			logger.Log("Error CheckResponse function", err)
+			return
+		}
+	}(s)
 
 	sendendpoints := endpoints.MakeGrpcEndpoint(s)
 	grpcServer := transports.NewGRPCServer(sendendpoints, logger)
@@ -157,7 +160,9 @@ func main() {
 		baseServer := grpc.NewServer()
 		reflection.Register(baseServer)
 		pb.RegisterDriverServer(baseServer, grpcServer)
-		level.Info(logger).Log("msg", "Driver Management GRPC Server started successfully")
+		level.Info(logger).Log("msg", "Driver Management GRPC Server started successfully", "port",
+			os.Getenv("GRPC_DRIVERMANAGEMENT_SRV_PORT"))
+
 		err = baseServer.Serve(grpcListener)
 		if err != nil {
 			level.Error(logger).Log("msg", "Failed to serve Driver Management GRPC Server")
@@ -175,9 +180,49 @@ func main() {
 	}()
 
 	go func() {
+
 		logger.Log("transport", "HTTP", "addr", *httpAddr)
 		errs <- http.ListenAndServe(*httpAddr, h)
 	}()
 
 	logger.Log("exit", <-errs)
+}
+
+func dbConnection(dns string, maxIdleConns, maxOpenConns int, isMaster bool) (*gorm.DB, error) {
+	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if isMaster {
+		err = db.AutoMigrate(&service.Driver{})
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = db.AutoMigrate(&service.Task{})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	sqlDB, err := db.DB()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	sqlDB.SetMaxIdleConns(maxIdleConns)
+
+	// SetMaxOpenConns sets the maximum number of open connections to the database.
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	return db, nil
 }

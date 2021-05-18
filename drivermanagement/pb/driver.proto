@@ -6,10 +6,10 @@ package pb;
 option go_package = "./pb";
 
 message Request {
-    string driverid = 1;
-    double dist = 2;
-    double lat = 3;
-    double lon = 4;
+    int32 driverid = 1;
+    double dist = 2; // distance between ride and driver
+    double lat = 3;  // ride latitude
+    double lon = 4;  // ride longitude
 }
 
 message Response {

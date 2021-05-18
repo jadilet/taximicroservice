@@ -24,13 +24,13 @@ type RequestLocation struct {
 	P   Point
 }
 
-type RequestGeo struct {
+type GeoRequest struct {
 	Lat    float64
 	Lon    float64
 	Radius float64
 }
 
-type ResponseGeo struct {
+type GeoResponse struct {
 	Locations []redis.GeoLocation
 	Err       string
 }
@@ -57,14 +57,14 @@ func makeSetEndpoint(s service.Service) endpoint.Endpoint {
 
 func makeNearestEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
-		request := req.(RequestGeo)
+		request := req.(GeoRequest)
 
 		locations, e := s.Nearest(ctx, request.Lon, request.Lat, request.Radius)
 
 		if e != nil {
-			return ResponseGeo{Locations: locations, Err: e.Error()}, e
+			return GeoResponse{Locations: locations, Err: e.Error()}, e
 		}
 
-		return ResponseGeo{Locations: locations}, nil
+		return GeoResponse{Locations: locations}, nil
 	}
 }

@@ -16,7 +16,7 @@ proto:
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -a -installsuffix cgo -ldflags '-s' -o bin/drivermanagement cmd/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -race -a -installsuffix cgo -ldflags '-s' -o bin/drivermanagement cmd/main.go
 
 .PHONY: test
 test:

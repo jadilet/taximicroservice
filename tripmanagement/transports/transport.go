@@ -55,7 +55,7 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 }
 
 func decodePostTripRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
-	var req endpoints.RideRequest
+	var req endpoints.RideReq
 	if e := json.NewDecoder(r.Body).Decode(&req.Ride); e != nil {
 		return nil, e
 	}

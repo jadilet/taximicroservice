@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/jadilet/taximicroservice/dispatcher/service"
+	dClient "github.com/jadilet/taximicroservice/drivermanagement/pb"
 	"github.com/jadilet/taximicroservice/location/pb"
 	"github.com/joho/godotenv"
 	"github.com/streadway/amqp"
@@ -76,7 +77,22 @@ func main() {
 	)
 
 	if err != nil {
-		logger.Log("Failed to declare a queue", err)
+		logger.Log("Failed to declare a queue open_ride_queue", err)
+		return
+	}
+
+	_, err = ch.QueueDeclare(
+		"waiting_driver_response",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+
+	if err != nil {
+		logger.Log("Failed to declare a queue waiting_driver_response", err)
 		return
 	}
 
@@ -95,18 +111,38 @@ func main() {
 	addr := fmt.Sprintf(":%s",
 		os.Getenv("GRPC_LOCATION_SRV_PORT"))
 
-	grpcConn, err := grpc.Dial(addr, opts...)
+	grpcLocationSrvConn, err := grpc.Dial(addr, opts...)
 	if err != nil {
-		logger.Log("Can't connect to GRPC server", err)
+		logger.Log("Can't connect to GRPC Location service server", err)
 		return
 	}
 
-	defer grpcConn.Close()
+	defer grpcLocationSrvConn.Close()
 
-	client := pb.NewLocationClient(grpcConn)
+	locationClient := pb.NewLocationClient(grpcLocationSrvConn)
 
-	s := service.NewDispatcherService(logger, ch, client, radius)
-	s.Dispatch(context.Background())
+	addrDrv := fmt.Sprintf(":%s",
+		os.Getenv("GRPC_DRIVERMANAGEMENT_SRV_PORT"))
+
+	grpcDriverSrvConn, err := grpc.Dial(addrDrv, opts...)
+
+	if err != nil {
+		logger.Log("Can't connect to GRPC DriverManagement service server", err)
+		return
+	}
+
+	defer grpcDriverSrvConn.Close()
+
+	driverClient := dClient.NewDriverClient(grpcDriverSrvConn)
+
+	s := service.NewDispatcherService(logger, ch,
+		locationClient, driverClient, radius)
+	err = s.Dispatch(context.Background())
+
+	if err != nil {
+		logger.Log("Dispatcher func failed", err)
+		return
+	}
 
 	errs := make(chan error)
 	go func() {

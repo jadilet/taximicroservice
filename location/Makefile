@@ -21,4 +21,4 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t location:latest
+	docker build . -t location:0.0.1

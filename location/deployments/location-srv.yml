@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: location-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: location-grpc
+  template:
+    metadata:
+      labels:
+        app: location-grpc
+    spec:
+      containers:
+      - name: location
+        image: jadilet/location:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: GET_HOSTS_FROM
+          value: env
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_SLAVE_SERVICE_HOST
+          value: "redis-master"
+        - name: GRPC_LOCATION_SRV_PORT
+          value: "50051"
+        - name: REDIS_DB
+          value: "0"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: location-service
+spec:
+  type: NodePort
+  ports:
+  - port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: location-grpc

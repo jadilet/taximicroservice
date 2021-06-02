@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcher-srv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatcher-srv
+  template:
+    metadata:
+      labels:
+        app: dispatcher-srv
+    spec:
+      containers:
+      - name: dispatcher
+        image: jadilet/dispatcher:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: RABBITMQ_HOST
+          value: "rabbitmq.test-rabbitmq"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USER
+          value: "guest"
+        - name: RABBITMQ_PASSWORD
+          value: "guest"
+        - name: GRPC_DRIVERMANAGEMENT_SRV_PORT
+          value: "50052"
+        - name: GRPC_LOCATION_SRV_PORT
+          value: "50051"
+        - name: DISPATCHER_RADIUS
+          value: "5"

@@ -17,4 +17,4 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t dispatcher:latest
+	docker build . -t dispatcher:0.0.1

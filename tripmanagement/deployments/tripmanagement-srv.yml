@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip-srv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trip-srv
+  template:
+    metadata:
+      labels:
+        app: trip-srv
+    spec:
+      containers:
+      - name: tripmanagement
+        image: jadilet/tripmanagement:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: ""
+        - name: MYSQL_DBNAME
+          value: "tripmanagement_db"
+        - name: MYSQL_PROTOCOL
+          value: "tcp"
+        - name: MYSQL_MASTER_HOST
+          value: "mysql.trip-mysql"
+        - name: MYSQL_MASTER_PORT
+          value: "3306"
+        - name: MYSQL_SLAVE_HOST
+          value: "mysql-read.trip-mysql"
+        - name: MYSQL_SLAVE_PORT
+          value: "3306"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq.test-rabbitmq"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USER
+          value: "guest"
+        - name: RABBITMQ_PASSWORD
+          value: "guest"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trip-service
+spec:
+  selector:
+    app: trip-srv
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer

@@ -19,4 +19,4 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t tripmanagement:latest
+	docker build . -t tripmanagement:0.0.1

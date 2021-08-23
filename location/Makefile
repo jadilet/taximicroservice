@@ -21,4 +21,6 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t location:0.0.1
+	docker build . -t location:0.0.2
+	docker tag location:0.0.2 jadilet/location:0.0.2
+	docker push jadilet/location:0.0.2

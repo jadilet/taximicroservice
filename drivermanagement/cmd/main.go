@@ -45,7 +45,7 @@ func main() {
 		logger.Log("Error while reading the .env file")
 	}
 
-	url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
+	url := fmt.Sprintf("amqps://%s:%s@%s:%s/",
 		os.Getenv("RABBITMQ_USER"),
 		os.Getenv("RABBITMQ_PASSWORD"),
 		os.Getenv("RABBITMQ_HOST"),

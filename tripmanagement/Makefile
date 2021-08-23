@@ -19,4 +19,6 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t tripmanagement:0.0.1
+	docker build . -t tripmanagement:0.0.2
+	docker tag tripmanagement:0.0.2 jadilet/tripmanagement:0.0.2
+	docker push jadilet/tripmanagement:0.0.2

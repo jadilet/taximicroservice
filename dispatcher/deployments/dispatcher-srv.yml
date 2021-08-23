@@ -15,17 +15,17 @@ spec:
     spec:
       containers:
       - name: dispatcher
-        image: jadilet/dispatcher:0.0.1
+        image: jadilet/dispatcher
         imagePullPolicy: Always
         env:
         - name: RABBITMQ_HOST
-          value: "rabbitmq.test-rabbitmq"
+          value: "b-88178cf5-588b-435d-a72f-a0d562d9d919.mq.eu-central-1.amazonaws.com"
         - name: RABBITMQ_PORT
-          value: "5672"
+          value: "5671"
         - name: RABBITMQ_USER
-          value: "guest"
+          value: "test"
         - name: RABBITMQ_PASSWORD
-          value: "guest"
+          value: "testingtesting"
         - name: GRPC_DRIVERMANAGEMENT_SRV_PORT
           value: "50052"
         - name: GRPC_LOCATION_SRV_PORT

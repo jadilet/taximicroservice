@@ -15,33 +15,33 @@ spec:
     spec:
       containers:
       - name: drivermanagement
-        image: jadilet/drivermanagement:0.0.1
+        image: jadilet/drivermanagement
         imagePullPolicy: Always
         env:
         - name: MYSQL_USER
-          value: "root"
+          value: "admin"
         - name: MYSQL_PASSWORD
-          value: ""
+          value: "password"
         - name: MYSQL_DBNAME
-          value: "drivermanagement_db"
+          value: "drivermanagement"
         - name: MYSQL_PROTOCOL
           value: "tcp"
         - name: MYSQL_MASTER_HOST
-          value: "mysql.drivermng-mysql"
+          value: "taxihailing.cbiommknu3sn.eu-central-1.rds.amazonaws.com"
         - name: MYSQL_MASTER_PORT
           value: "3306"
         - name: MYSQL_SLAVE_HOST
-          value: "mysql-read.drivermng-mysql"
+          value: "taxihailing.cbiommknu3sn.eu-central-1.rds.amazonaws.com"
         - name: MYSQL_SLAVE_PORT
           value: "3306"
         - name: RABBITMQ_HOST
-          value: "rabbitmq.test-rabbitmq"
+          value: "b-88178cf5-588b-435d-a72f-a0d562d9d919.mq.eu-central-1.amazonaws.com"
         - name: RABBITMQ_PORT
-          value: "5672"
+          value: "5671"
         - name: RABBITMQ_USER
-          value: "guest"
+          value: "test"
         - name: RABBITMQ_PASSWORD
-          value: "guest"
+          value: "testingtesting"
         - name: GRPC_DRIVERMANAGEMENT_SRV_PORT
           value: "50052"
 

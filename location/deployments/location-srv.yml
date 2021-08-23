@@ -15,13 +15,13 @@ spec:
     spec:
       containers:
       - name: location
-        image: jadilet/location:0.0.1
+        image: jadilet/location
         imagePullPolicy: Always
         env:
         - name: GET_HOSTS_FROM
           value: env
         - name: REDIS_HOST
-          value: "redis-service"
+          value: "redis.5tw0pb.ng.0001.euc1.cache.amazonaws.com"
         - name: REDIS_PORT
           value: "6379"
         - name: REDIS_SLAVE_SERVICE_HOST

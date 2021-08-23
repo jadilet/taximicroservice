@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: tripmanagement
-        image: jadilet/tripmanagement:0.0.1
+        image: jadilet/tripmanagement
         imagePullPolicy: Always
         env:
         - name: MYSQL_USER
@@ -23,25 +23,25 @@ spec:
         - name: MYSQL_PASSWORD
           value: ""
         - name: MYSQL_DBNAME
-          value: "tripmanagement_db"
+          value: "tripmanagement"
         - name: MYSQL_PROTOCOL
           value: "tcp"
         - name: MYSQL_MASTER_HOST
-          value: "mysql.trip-mysql"
+          value: "taxihailing.cbiommknu3sn.eu-central-1.rds.amazonaws.com"
         - name: MYSQL_MASTER_PORT
           value: "3306"
         - name: MYSQL_SLAVE_HOST
-          value: "mysql-read.trip-mysql"
+          value: "taxihailing.cbiommknu3sn.eu-central-1.rds.amazonaws.com"
         - name: MYSQL_SLAVE_PORT
           value: "3306"
         - name: RABBITMQ_HOST
-          value: "rabbitmq.test-rabbitmq"
+          value: "b-88178cf5-588b-435d-a72f-a0d562d9d919.mq.eu-central-1.amazonaws.com"
         - name: RABBITMQ_PORT
-          value: "5672"
+          value: "5671"
         - name: RABBITMQ_USER
-          value: "guest"
+          value: "test"
         - name: RABBITMQ_PASSWORD
-          value: "guest"
+          value: "testingtesting"
 
 ---
 apiVersion: v1

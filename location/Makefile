@@ -23,4 +23,6 @@ test:
 docker:
 	docker build . -t location:0.0.2
 	docker tag location:0.0.2 jadilet/location:0.0.2
+	docker tag location:0.0.2 jadilet/location:latest
 	docker push jadilet/location:0.0.2
+	docker push jadilet/location:latest

@@ -17,6 +17,8 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t dispatcher:0.0.2
-	docker tag dispatcher:0.0.2 jadilet/dispatcher:0.0.2
-	docker push jadilet/dispatcher:0.0.2
+	docker build . -t dispatcher:0.0.4
+	docker tag dispatcher:0.0.4 jadilet/dispatcher:0.0.4
+	docker tag dispatcher:0.0.4 jadilet/dispatcher:latest
+	docker push jadilet/dispatcher:0.0.4
+	docker push jadilet/dispatcher:latest

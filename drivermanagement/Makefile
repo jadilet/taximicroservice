@@ -24,6 +24,8 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t drivermanagement:0.0.2
-	docker tag drivermanagement:0.0.2 jadilet/drivermanagement:0.0.2
-	docker push jadilet/drivermanagement:0.0.2
+	docker build . -t drivermanagement:0.0.3 -t drivermanagement:latest
+	docker tag drivermanagement:0.0.3 jadilet/drivermanagement:0.0.3
+	docker tag drivermanagement:0.0.3 jadilet/drivermanagement:latest
+	docker push jadilet/drivermanagement:0.0.3
+	docker push jadilet/drivermanagement:latest

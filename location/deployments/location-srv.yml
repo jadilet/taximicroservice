@@ -18,14 +18,14 @@ spec:
         image: jadilet/location
         imagePullPolicy: Always
         env:
-        - name: GET_HOSTS_FROM
-          value: env
         - name: REDIS_HOST
-          value: "redis.5tw0pb.ng.0001.euc1.cache.amazonaws.com"
+          value: "my-redis-master.default.svc.cluster.local"
         - name: REDIS_PORT
           value: "6379"
-        - name: REDIS_SLAVE_SERVICE_HOST
-          value: "redis-master"
+        - name: REDIS_USER
+          value: ""
+        - name: REDIS_PASSWORD
+          value: "FlVfk7QI7D"
         - name: GRPC_LOCATION_SRV_PORT
           value: "50051"
         - name: REDIS_DB

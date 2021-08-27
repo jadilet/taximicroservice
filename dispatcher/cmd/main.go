@@ -41,7 +41,8 @@ func main() {
 		return
 	}
 
-	url := fmt.Sprintf("amqps://%s:%s@%s:%s/",
+	url := fmt.Sprintf("%s://%s:%s@%s:%s/",
+		os.Getenv("RABBITMQ_PROTOCOL"),
 		os.Getenv("RABBITMQ_USER"),
 		os.Getenv("RABBITMQ_PASSWORD"),
 		os.Getenv("RABBITMQ_HOST"),
@@ -90,7 +91,6 @@ func main() {
 		nil,
 	)
 
-
 	if err != nil {
 		logger.Log("Failed to declare a queue waiting_driver_response", err)
 		return
@@ -108,7 +108,8 @@ func main() {
 	}
 
 	var opts []grpc.DialOption = []grpc.DialOption{grpc.WithInsecure()}
-	addr := fmt.Sprintf(":%s",
+	addr := fmt.Sprintf("%s:%s",
+		os.Getenv("GRPC_LOCATION_SRV_NAME"),
 		os.Getenv("GRPC_LOCATION_SRV_PORT"))
 
 	grpcLocationSrvConn, err := grpc.Dial(addr, opts...)
@@ -121,7 +122,8 @@ func main() {
 
 	locationClient := pb.NewLocationClient(grpcLocationSrvConn)
 
-	addrDrv := fmt.Sprintf(":%s",
+	addrDrv := fmt.Sprintf("%s:%s",
+		os.Getenv("GRPC_DRIVERMANAGEMENT_SRV_NAME"),
 		os.Getenv("GRPC_DRIVERMANAGEMENT_SRV_PORT"))
 
 	grpcDriverSrvConn, err := grpc.Dial(addrDrv, opts...)

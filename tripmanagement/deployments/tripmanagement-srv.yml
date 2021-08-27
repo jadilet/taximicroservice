@@ -19,9 +19,9 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MYSQL_USER
-          value: "root"
+          value: "admin"
         - name: MYSQL_PASSWORD
-          value: ""
+          value: "password"
         - name: MYSQL_DBNAME
           value: "tripmanagement"
         - name: MYSQL_PROTOCOL
@@ -35,13 +35,15 @@ spec:
         - name: MYSQL_SLAVE_PORT
           value: "3306"
         - name: RABBITMQ_HOST
-          value: "b-88178cf5-588b-435d-a72f-a0d562d9d919.mq.eu-central-1.amazonaws.com"
+          value: "my-release-rabbitmq.test-rabbitmq"
         - name: RABBITMQ_PORT
-          value: "5671"
+          value: "5672"
         - name: RABBITMQ_USER
-          value: "test"
+          value: "user"
         - name: RABBITMQ_PASSWORD
-          value: "testingtesting"
+          value: "UNiYi1OIbg"
+        - name: RABBITMQ_PROTOCOL
+          value: amqp
 
 ---
 apiVersion: v1

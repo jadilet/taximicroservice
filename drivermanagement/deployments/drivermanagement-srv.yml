@@ -46,6 +46,10 @@ spec:
           value: "50052"
         - name: RABBITMQ_PROTOCOL
           value: amqp
+        - name: GRPC_LOCATION_SRV_PORT
+          value: "50051"
+        - name: GRPC_LOCATION_SRV_NAME
+          value: "location-service"
 
 ---
 apiVersion: v1

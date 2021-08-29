@@ -101,6 +101,14 @@ func MakeHTTPHandler(s service.DriverService, logger log.Logger) http.Handler {
 			options...,
 		))
 
+	r.Methods("POST").Path("/driver/set/").Handler(
+		httptransport.NewServer(
+			e.Set,
+			decodePostDriverSetReq,
+			encodeResponse,
+			options...,
+		))
+
 	return r
 }
 
@@ -111,6 +119,15 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return json.NewEncoder(w).Encode(response)
+}
+
+func decodePostDriverSetReq(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoints.LocReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 func decodePostDriverRegisterReq(_ context.Context, r *http.Request) (request interface{}, err error) {

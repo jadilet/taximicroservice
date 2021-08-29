@@ -17,6 +17,7 @@ import (
 	"github.com/jadilet/taximicroservice/drivermanagement/pb"
 	"github.com/jadilet/taximicroservice/drivermanagement/service"
 	"github.com/jadilet/taximicroservice/drivermanagement/transports"
+	location "github.com/jadilet/taximicroservice/location/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -135,7 +136,23 @@ func main() {
 		return
 	}
 
-	s := service.NewDriverService(logger, masterDb, slaveDb, ch)
+	// Grpc client of LocationService
+	var opts []grpc.DialOption = []grpc.DialOption{grpc.WithInsecure()}
+	addr := fmt.Sprintf("%s:%s",
+		os.Getenv("GRPC_LOCATION_SRV_NAME"),
+		os.Getenv("GRPC_LOCATION_SRV_PORT"))
+
+	grpcLocationSrvConn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		logger.Log("Can't connect to GRPC Location service server", err)
+		return
+	}
+
+	defer grpcLocationSrvConn.Close()
+
+	locationClient := location.NewLocationClient(grpcLocationSrvConn)
+
+	s := service.NewDriverService(logger, masterDb, slaveDb, ch, locationClient)
 	h := transports.MakeHTTPHandler(s, log.With(logger, "component", "HTTP"))
 
 	go func(s service.DriverService) {

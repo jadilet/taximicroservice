@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/jadilet/taximicroservice/location/pb"
 	"github.com/streadway/amqp"
 
 	"gorm.io/gorm"
@@ -50,18 +51,30 @@ type DriverService interface {
 	CheckResponse(ctx context.Context) error
 	Send(ctx context.Context, driverID uint, lat float64, lon float64, dist float64) (string, error)
 	Accept(ctx context.Context, driverID, rideID uint) (string, error)
+	Set(ctx context.Context, driverID uint, lat float64, lon float64) error
+}
+
+type DriverLocationService interface {
+	Set(ctx context.Context, driverID uint, lat float64, lon float64) error
 }
 
 type driverService struct {
-	logger log.Logger
-	master *gorm.DB
-	slave  *gorm.DB
-	ch     *amqp.Channel
-	mutex  sync.Mutex
+	logger    log.Logger
+	master    *gorm.DB
+	slave     *gorm.DB
+	ch        *amqp.Channel
+	mutex     sync.Mutex
+	locClient pb.LocationClient
 }
 
-func NewDriverService(log log.Logger, master *gorm.DB, slave *gorm.DB, ch *amqp.Channel) DriverService {
-	return &driverService{logger: log, master: master, slave: slave, ch: ch}
+func NewDriverService(log log.Logger, master *gorm.DB, slave *gorm.DB, ch *amqp.Channel, locClient pb.LocationClient) DriverService {
+	return &driverService{logger: log, master: master, slave: slave, ch: ch, locClient: locClient}
+}
+
+func (s *driverService) Set(ctx context.Context, driverID uint, lat float64, lon float64) error {
+	_, err := s.locClient.Set(ctx, &pb.RequestLocation{Key: int32(driverID), P: &pb.Point{Latitude: lat, Longitude: lon}})
+
+	return err
 }
 
 func (s *driverService) Accept(ctx context.Context, driverID, rideID uint) (string, error) {
@@ -160,9 +173,9 @@ func (s *driverService) CheckResponse(ctx context.Context) error {
 			// to the dispatcher service
 			elapsed := time.Now().UTC().Sub(ride.SentAt)
 			s.logger.Log("Checking response elapsed time", elapsed)
-			if elapsed < time.Second * 15 {
-				s.logger.Log("Waiting driver response for RideID", ride.ID, "elapsed", time.Second * 15 - elapsed)
-				time.Sleep(time.Second * 15 - elapsed)
+			if elapsed < time.Second*15 {
+				s.logger.Log("Waiting driver response for RideID", ride.ID, "elapsed", time.Second*15-elapsed)
+				time.Sleep(time.Second*15 - elapsed)
 			}
 
 			if elapsed > time.Hour*1 {

@@ -17,6 +17,13 @@ spec:
       - name: location
         image: jadilet/location
         imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 500m
+            memory: "200Mi"
+          requests:
+            cpu: 200m
+            memory: "64Mi"
         env:
         - name: REDIS_HOST
           value: "my-redis-master.default.svc.cluster.local"
@@ -25,7 +32,7 @@ spec:
         - name: REDIS_USER
           value: ""
         - name: REDIS_PASSWORD
-          value: "FlVfk7QI7D"
+          value: "fAIO9FvCe3"
         - name: GRPC_LOCATION_SRV_PORT
           value: "50051"
         - name: REDIS_DB

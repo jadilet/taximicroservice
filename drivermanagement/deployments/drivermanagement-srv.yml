@@ -17,6 +17,13 @@ spec:
       - name: drivermanagement
         image: jadilet/drivermanagement
         imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 500m
+            memory: "200Mi"
+          requests:
+            cpu: 200m
+            memory: "64Mi"
         env:
         - name: MYSQL_USER
           value: "admin"
@@ -35,13 +42,13 @@ spec:
         - name: MYSQL_SLAVE_PORT
           value: "3306"
         - name: RABBITMQ_HOST
-          value: "my-release-rabbitmq.test-rabbitmq"
+          value: "my-rabbitmq"
         - name: RABBITMQ_PORT
           value: "5672"
         - name: RABBITMQ_USER
           value: "user"
         - name: RABBITMQ_PASSWORD
-          value: "UNiYi1OIbg"
+          value: "vZv1kaB7V7"
         - name: GRPC_DRIVERMANAGEMENT_SRV_PORT
           value: "50052"
         - name: RABBITMQ_PROTOCOL
